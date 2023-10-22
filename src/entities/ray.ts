@@ -1,31 +1,58 @@
 import { Line } from "./line";
 import { Vector } from "../types/vector";
 
+/**
+ * A ray is a line segment that starts at a position and points in a direction. The ray is
+ * responsible for casting itself against the walls and drawing itself.
+ */
 export class Ray {
+  /**
+   * Creates a new Ray. The ray is responsible for casting itself against the walls.
+   *
+   * @param position the position of the ray
+   * @param direction the direction of the ray is pointing
+   */
   constructor(
     public position: Vector,
     public direction: Vector
   ) {}
 
-  lookAt(direction: Vector): void {
-    this.direction.x = direction.x - this.position.x;
-    this.direction.y = direction.y - this.position.y;
+  /**
+   * Updates the direction of the ray to look at the position
+   *
+   * @param position the position to look at
+   */
+  lookAt(position: Vector): void {
+    this.direction.x = position.x - this.position.x;
+    this.direction.y = position.y - this.position.y;
   }
 
-  draw(lines: Line[]): void {
-    const intersection = this.getClosestIntersection(lines);
+  /**
+   * Casts the ray against the lines
+   *
+   * @param walls the walls to cast the ray against
+   */
+  draw(walls: Line[]): void {
+    const intersection = this.getClosestIntersection(walls);
     if (!intersection) return;
 
     const ray = new Line(this.position, intersection, 0.005);
     ray.draw();
   }
 
-  private getClosestIntersection(lines: Line[]): Vector | undefined {
+  /**
+   * Returns the closest intersection between the ray and the walls. If there is no intersection,
+   * undefined is returned.
+   *
+   * @param walls the walls to cast the ray against
+   * @returns the position of the closest intersection between the ray and the walls
+   */
+  private getClosestIntersection(walls: Line[]): Vector | undefined {
     let closestIntersection: Vector | undefined = undefined;
     let closestDistance: number = Infinity;
 
-    for (const line of lines) {
-      const intersection = this.getIntersection(line);
+    for (const wall of walls) {
+      const intersection = this.getIntersection(wall);
       if (intersection) {
         const distance = Math.hypot(
           this.position.x - intersection.x,
@@ -41,6 +68,12 @@ export class Ray {
     return closestIntersection;
   }
 
+  /**
+   * Returns the intersection between the ray and the line. If there is no intersection, undefined
+   *
+   * @param line the line to check for intersection
+   * @returns the position of the intersection between the ray and the line
+   */
   private getIntersection(line: Line): Vector | undefined {
     // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
     const x1 = line.start.x;
